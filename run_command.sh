@@ -1,0 +1,15 @@
+python -u -m torch.distributed.launch \
+--nproc_per_node=1 run.py \
+--data_root D:\\ADAXI\\Datasets\\VOC_SDR \
+--batch_size 8 \
+--logdir logs/offline/ \
+--dataset voc \
+--name SDR \
+--task offline \
+--step 0 \
+--lr 0.001 \
+--epochs 30 \
+--debug \
+--sample_num 10 \
+--ckpt logs/offline//offline-voc_SDR//offline-voc_SDR_0.pth\
+--where_to_sim GPU_windows

@@ -1,0 +1,29 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: 当前文件",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\lttm\\Anaconda3\\envs\\sdr_lc\\Lib\\site-packages\\torch\\distributed\\launch.py",
+            "console": "integratedTerminal",
+
+            "args": [
+
+                "--nproc_per_node=1",
+                "run.py",
+                "--data_root", "D:\\ADAXI\\Datasets\\VOC_SDR",
+                "--name","logs",
+                "--task", "19-1",
+                "--method", "SDR",
+                "--val_interval", "1",
+                "--epochs", "2",
+                "--step", "1" 
+            ],
+            "justMyCode": true
+        }
+    ]
+}
