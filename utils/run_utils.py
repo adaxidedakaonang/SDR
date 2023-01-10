@@ -74,7 +74,8 @@ def get_dataset(opts, rank):
     train_dst = dataset(root=opts.data_root, train=True, transform=train_transform,
                         labels=list(labels), labels_old=list(labels_old),
                         idxs_path=path_base + f"/train-{opts.step}.npy",
-                        masking=not opts.no_mask, overlap=opts.overlap, where_to_sim=opts.where_to_sim, rank=rank)
+                        masking=not opts.no_mask, overlap=opts.overlap, where_to_sim=opts.where_to_sim, rank=rank, 
+                        replay=opts.replay, mix_label=opts.mix, opt=opts)
 
     if not opts.no_cross_val:  # if opts.cross_val:
         train_len = int(0.8 * len(train_dst))

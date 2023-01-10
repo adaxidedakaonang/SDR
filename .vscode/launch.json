@@ -14,20 +14,25 @@
             "args": [
 
                 "--data_root", "D:\\ADAXI\\Datasets\\VOC_SDR",
-                "--batch_size", "8",
+                "--backbone", "resnet50",
+                "--crop_size", "128",
+                "--batch_size", "4",
                 "--logdir", "logs/debug/",
                 "--dataset", "voc",
-                "--name","no-name",
+                "--name","debug",
                 "--task", "19-1",
-                "--method", "SDR",
+                "--method", "FT",
                 "--val_interval", "5",
                 "--epochs", "30",
                 "--step", "1",
+                "--cross_val",
                 "--lr", "0.0001",
                 "--debug",
                 "--sample_num", "10",
                 "--where_to_sim", "GPU_windows",
-                "--step_ckpt", "logs/19-1//19-1-voc_Experiment//19-1-voc_Experiment_0.pth"
+                "--step_ckpt", "logs/19-1//19-1-voc_FT//19-1-voc_FT_0.pth",
+                "--replay",
+                "--mix",
                 // "--ckpt", "logs/offline//offline-voc_SDR_0.01//offline-voc_SDR_0.01_0.pth" 
             ],
             "justMyCode": true

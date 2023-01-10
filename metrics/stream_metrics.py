@@ -71,6 +71,10 @@ class StreamSegMetrics(_StreamMetrics):
         ).reshape(self.n_classes, self.n_classes)
         return hist
 
+    def _get_reverse(self, msk, idx_1st, idx_last):
+        r_msk = [True if i >=idx_1st and i<=idx_last else False for i in range(len(msk)) ]
+        return r_msk
+
     def get_results(self):
         """Returns accuracy score evaluation result.
             - overall accuracy (aka pixel accuracy)
@@ -83,6 +87,7 @@ class StreamSegMetrics(_StreamMetrics):
 
         gt_sum = hist.sum(axis=1)
         mask = (gt_sum != 0)
+        mask_reverse = self._get_reverse(mask, 1, 19)
         diag = np.diag(hist)
 
         acc = diag.sum() / hist.sum()
@@ -90,6 +95,7 @@ class StreamSegMetrics(_StreamMetrics):
         acc_cls = np.mean(acc_cls_c[mask])
         iu = diag / (gt_sum + hist.sum(axis=0) - diag + EPS)
         mean_iu = np.mean(iu[mask])
+        mean_iu_reverse = np.mean(iu[mask_reverse])
         freq = hist.sum(axis=1) / hist.sum()
         fwavacc = (freq[freq > 0] * iu[freq > 0]).sum()
         cls_iu = dict(zip(range(self.n_classes), [iu[i] if m else "X" for i, m in enumerate(mask)]))
@@ -101,6 +107,7 @@ class StreamSegMetrics(_StreamMetrics):
                 "Mean Acc": acc_cls,
                 "FreqW Acc": fwavacc,
                 "Mean IoU": mean_iu,
+                "Mean reverse IoU": mean_iu_reverse,
                 "Class IoU": cls_iu,
                 "Class Acc": cls_acc,
                 "Confusion Matrix": self.confusion_matrix_to_fig()

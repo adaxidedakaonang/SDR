@@ -3,7 +3,7 @@ import torch.utils.data as data
 from torch import distributed, zeros_like, unique
 import torchvision as tv
 import numpy as np
-from .utils import Subset, filter_images
+from .utils import Subset, filter_images, Replayset, mix_labels
 
 from PIL import Image
 
@@ -80,7 +80,7 @@ class VOCSegmentation(data.Dataset):
             file_names = [x[:-1].split(' ') for x in f.readlines()]
 
         # REMOVE FIRST SLASH OTHERWISE THE JOIN WILL start from root
-        self.images = [(os.path.join(voc_root, x[0][1:]), os.path.join(voc_root, x[1][1:])) for x in file_names]
+        self.images = [[os.path.join(voc_root, x[0][1:]), os.path.join(voc_root, x[1][1:])] for x in file_names]
 
     def __getitem__(self, index):
         """
@@ -111,9 +111,14 @@ class VOCSegmentationIncremental(data.Dataset):
                  masking=True,
                  overlap=True,
                  where_to_sim='GPU_windows',
-                 rank=0):
+                 rank=0,
+                 replay=False,
+                 mix_label=False,
+                 opt=None):
 
         full_voc = VOCSegmentation(root, 'train' if train else 'val', is_aug=True, transform=None)
+
+
 
         self.labels = []
         self.labels_old = []
@@ -182,9 +187,26 @@ class VOCSegmentationIncremental(data.Dataset):
                 target_transform = reorder_transform
 
             # make the subset of the dataset
+            
+            ###############################LC TODO #################################
+            ### performing replaying strategy
+            self.replayset = None
+            if train and len(self.labels_old)>1 and replay:
+            #     print("Adding replay images")
+                base_path = r"D:\ADAXI\Datasets\increment\replay_images_and_labels"
+                self.replayset = Replayset(path=base_path, labels_old=self.labels_old, transform=transform)
+                print()
+            ### performing mixing label strategy
+            if train and len(self.labels_old)>1 and mix_label:
+                print("Performing mixing labels !!!")
+                full_voc.images = mix_labels(img_list=full_voc.images, idxs=idxs, opts=opt)
+        # REMOVE FIRST SLASH OTHERWISE THE JOIN WILL start from root
+
+            ########################################################################
             self.dataset = Subset(full_voc, idxs, transform, target_transform)
         else:
             self.dataset = full_voc
+        print()
 
     def tmp_funct1(self, x):
         tmp = zeros_like(x)
@@ -216,11 +238,22 @@ class VOCSegmentationIncremental(data.Dataset):
         Returns:
             tuple: (image, target) where target is the image segmentation.
         """
-
-        return self.dataset[index]
+        len1 = len(self.dataset)
+        if index>=len1:
+            return self.replayset[index-len1]
+        else:
+            return self.dataset[index]
+        # return self.dataset[index]
 
     def __len__(self):
-        return len(self.dataset)
+        len1 = len(self.dataset)
+        if not self.replayset is None:
+            len2 = len(self.replayset)
+        else:
+            len2 = 0
+        len_ = len1+len2
+        return len_
+        # return len(self.dataset)
 
     @staticmethod
     def __strip_zero(labels):

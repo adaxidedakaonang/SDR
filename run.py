@@ -123,9 +123,11 @@ def main(opts):
         # get model path
         if not opts.test:
             path = f"{logdir_full}/{task_name}_{opts.name}_{opts.step - 1}.pth"
+            
         else:
             path = opts.step_ckpt
 
+        print(path)
         if opts.step_ckpt is not None and opts.step == 1:
             path_FT = opts.step_ckpt
         else:
@@ -254,6 +256,7 @@ def main(opts):
 
     TRAIN = not opts.test
     val_metrics = StreamSegMetrics(n_classes, opts)
+    tst_metrics = StreamSegMetrics(n_classes, opts)
     results = {}
 
     # check if random is equal here.
@@ -309,7 +312,13 @@ def main(opts):
             logger.info(f"End of Validation {cur_epoch+1}/{opts.epochs}, Validation Loss={val_loss[0]+val_loss[1]},"
                         f" Class Loss={val_loss[0]}, Reg Loss={val_loss[1]}")
             logger.info(val_metrics.to_str(val_score))
-
+            # logger.print("Start test per epoch")
+            # tst_loss, tst_score, _ = trainer.validate(loader=test_loader, metrics=tst_metrics, logger=logger, world_size=world_size)
+            # logger.print("Test finished.")
+            # logger.info(tst_metrics.to_str(tst_score))
+            # logger.add_table("Test_Class_IoU", tst_score['Class IoU'])
+            # logger.add_scalar("T_MeanIoU", tst_score['Mean reverse IoU'], opts.step)
+            # logger.print("Test ended.")
             # =====  Save Best Model  =====
             if rank == 0:  # save best model at the last iteration
                 score = val_score['Mean IoU']

@@ -145,8 +145,8 @@ class Trainer:
         start_epoch_time = time.time()
         for cur_step, (images, labels) in enumerate(train_loader):
 
-            if cur_step > 10:
-                break
+            # if cur_step > 10:
+            #     break
 
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
@@ -267,7 +267,7 @@ class Trainer:
                 interval_loss = interval_loss / print_int
                 logger.info(f"Epoch {cur_epoch}, Batch {cur_step + 1}/{len(train_loader)},"
                             " Loss={:.3f}, Time taken={:.2f}".format(interval_loss,time.time() - start_time))
-                logger.debug(f"Loss made of: CE {loss:.2f}, LKD {lkd}, LDE {lde}, LReg {l_reg}, Lfc {lfc}, "
+                logger.info(f"Loss made of: CE {loss:.2f}, LKD {lkd}, LDE {lde}, LReg {l_reg}, Lfc {lfc}, "
                              f"LSNNL {lSNNL}, Lsepclus {lsep_clusters}, LDEProto {ldeprototype}, Lfeatspars {lfs}, "
                              f"LCIL {lCIL}")
                 # visualization
@@ -338,8 +338,8 @@ class Trainer:
         with torch.no_grad():
             for i, (images, labels) in enumerate(loader):
 
-                if i >10:
-                    break
+                # if i >10:
+                #     break
 
                 images = images.to(device, dtype=torch.float32)
                 labels = labels.to(device, dtype=torch.long)
