@@ -179,7 +179,7 @@ def get_argparser():
     # Validation Options
     parser.add_argument("--val_on_trainset", action='store_true', default=False,
                         help="enable validation on train set (default: False)")
-    parser.add_argument("--cross_val", action='store_true', default=True,
+    parser.add_argument("--cross_val", action='store_true', default=False,
                         help="If validate on training or on validation (default: Train)")
     parser.add_argument("--crop_val", action='store_false', default=True,
                         help='do crop for validation (default: True)')

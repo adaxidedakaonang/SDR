@@ -3,7 +3,8 @@ import torch.utils.data as data
 from torch import distributed, zeros_like, unique
 import torchvision as tv
 import numpy as np
-from .utils import Subset, filter_images, Replayset, mix_labels
+import random
+from .utils import Subset, filter_images, Replayset, ConcateDataset, mix_labels
 
 from PIL import Image
 
@@ -122,7 +123,7 @@ class VOCSegmentationIncremental(data.Dataset):
 
         self.labels = []
         self.labels_old = []
-
+        self.train = train
         self.where_to_sim = where_to_sim
         self.rank = rank
 
@@ -188,7 +189,7 @@ class VOCSegmentationIncremental(data.Dataset):
 
             # make the subset of the dataset
             
-            ###############################LC TODO #################################
+            ############################### LC TODO #################################
             ### performing replaying strategy
             self.replayset = None
             if train and len(self.labels_old)>1 and replay:
@@ -199,13 +200,21 @@ class VOCSegmentationIncremental(data.Dataset):
             ### performing mixing label strategy
             if train and len(self.labels_old)>1 and mix_label:
                 print("Performing mixing labels !!!")
-                full_voc.images = mix_labels(img_list=full_voc.images, idxs=idxs, opts=opt)
+                full_voc.images = mix_labels(img_list=full_voc.images, idxs=idxs, opts=opt, labels=self.labels)
+                target_transform = None
+                
         # REMOVE FIRST SLASH OTHERWISE THE JOIN WILL start from root
 
             ########################################################################
+
             self.dataset = Subset(full_voc, idxs, transform, target_transform)
         else:
             self.dataset = full_voc
+        print()
+        if train and replay:
+            self.concate_set = ConcateDataset(self.replayset, self.dataset)
+        else:
+            self.concate_set = ConcateDataset(self.dataset)
         print()
 
     def tmp_funct1(self, x):
@@ -232,28 +241,41 @@ class VOCSegmentationIncremental(data.Dataset):
         return tmp
 
     def __getitem__(self, index):
+        # print("dataset")
         """
         Args:
             index (int): Index
         Returns:
             tuple: (image, target) where target is the image segmentation.
         """
-        len1 = len(self.dataset)
-        if index>=len1:
-            return self.replayset[index-len1]
-        else:
-            return self.dataset[index]
-        # return self.dataset[index]
+        return self.dataset[index]
+        # return self.replayset[index%len(self.replayset)]
+        # if random.random()>0.5 and self.replayset is not None:
+        #     return self.replayset[index%len(self.replayset)]
+        # else:
+        #     return self.dataset[index%len(self.dataset)]
+        # len1 = len(self.dataset)
+        # if index>=len1:
+        #     return self.replayset[index-len1]
+        # else:
+        #     return self.dataset[index]
+
+        # return self.concate_set[index]
 
     def __len__(self):
-        len1 = len(self.dataset)
-        if not self.replayset is None:
-            len2 = len(self.replayset)
-        else:
-            len2 = 0
-        len_ = len1+len2
-        return len_
-        # return len(self.dataset)
+        return len(self.dataset)
+        # len1 = len(self.dataset)
+        # if not self.replayset is None:
+        #     len2 = len(self.replayset)
+        # else:
+        #     len2 = 0
+        # len_ = max(len1, len2)
+
+        # if self.train and len2>0:
+        #     return 2*len_
+        # else:
+        #     return len_
+        # return len(self.concate_set)
 
     @staticmethod
     def __strip_zero(labels):

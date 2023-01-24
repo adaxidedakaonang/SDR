@@ -3,6 +3,8 @@ import argparser
 
 from torch.utils.data.distributed import DistributedSampler
 from torch.utils import data
+from torch.utils.data import ConcatDataset
+from sampler import InterleaveSampler
 from shutil import copy
 import time
 
@@ -37,9 +39,13 @@ def main(opts):
     # reset the seed, this revert changes in random seed
     random.seed(opts.random_seed)
 
-    train_loader = data.DataLoader(train_dst, batch_size=opts.batch_size,
-                                   sampler=DistributedSampler(train_dst, num_replicas=world_size, rank=rank),
-                                   num_workers=opts.num_workers, drop_last=True)
+    concate_dataset = ConcatDataset([train_dst.dataset, train_dst.replayset])
+    interleave_sampler = InterleaveSampler(concate_dataset, batch_size=opts.batch_size)
+    train_loader = data.DataLoader(concate_dataset, sampler=interleave_sampler, batch_size=opts.batch_size, num_workers=opts.num_workers)
+
+    # train_loader = data.DataLoader(train_dst, batch_size=opts.batch_size,
+    #                                sampler=DistributedSampler(train_dst, num_replicas=world_size, rank=rank),
+    #                                num_workers=opts.num_workers, drop_last=True)
     val_loader = data.DataLoader(val_dst, batch_size=opts.batch_size if opts.crop_val else 1,
                                  sampler=DistributedSampler(val_dst, num_replicas=world_size, rank=rank),
                                  num_workers=opts.num_workers)
@@ -89,7 +95,7 @@ def main(opts):
     optimizer = torch.optim.SGD(params, lr=opts.lr, momentum=0.9, nesterov=True)
 
     if opts.lr_policy == 'poly':
-        scheduler = utils.PolyLR(optimizer, max_iters=opts.epochs * len(train_loader), power=opts.lr_power)
+        scheduler = utils.PolyLR(optimizer, max_iters=opts.epochs * len(train_loader)*opts.batch_size, power=opts.lr_power)
     elif opts.lr_policy == 'step':
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=opts.lr_decay_step, gamma=opts.lr_decay_factor)
     else:

@@ -26,6 +26,7 @@ class Trainer:
         self.overlap = opts.overlap
         self.loss_de_prototypes_sumafter = opts.loss_de_prototypes_sumafter
         self.num_classes = sum(classes) if classes is not None else 0
+        self.batch_size = opts.batch_size
 
         if classes is not None:
             new_classes = classes[-1]
@@ -138,7 +139,7 @@ class Trainer:
         lfs = torch.tensor(0.)
         lCIL = torch.tensor(0.)
 
-        train_loader.sampler.set_epoch(cur_epoch)
+        # train_loader.sampler.set_epoch(cur_epoch)
 
         model.train()
         start_time = time.time()
@@ -147,9 +148,22 @@ class Trainer:
 
             # if cur_step > 10:
             #     break
-
+            # sum_images = torch.zeros([len(images)*images[0].shape[0], images[0].shape[1], images[0].shape[2], images[0].shape[3]])
+            # sum_labels = sum_images
+            # idx = 0
+            # for img in images:
+            #     for i in range(img.shape[0]):
+            #         sum_images[idx,:,:,:] = img[i]
+            #         idx+=1
+            
             images = images.to(device, dtype=torch.float32)
             labels = labels.to(device, dtype=torch.long)
+
+            # tmp = labels.cpu().numpy()
+            # _ = np.unique(tmp)
+            # print(_)
+            # if np.max(_) == 255:
+            #     print()
 
             if (self.lde_flag or self.lkd_flag or self.icarl_dist_flag or self.lfc_flag or self.lfc_sep_clust
                 or self.lSNNL_flag or self.ldeprototype_flag or self.lCIL) \
@@ -265,7 +279,7 @@ class Trainer:
 
             if (cur_step + 1) % print_int == 0:
                 interval_loss = interval_loss / print_int
-                logger.info(f"Epoch {cur_epoch}, Batch {cur_step + 1}/{len(train_loader)},"
+                logger.info(f"Epoch {cur_epoch}, Batch {cur_step + 1}/{len(train_loader)*self.batch_size},"
                             " Loss={:.3f}, Time taken={:.2f}".format(interval_loss,time.time() - start_time))
                 logger.info(f"Loss made of: CE {loss:.2f}, LKD {lkd}, LDE {lde}, LReg {l_reg}, Lfc {lfc}, "
                              f"LSNNL {lSNNL}, Lsepclus {lsep_clusters}, LDEProto {ldeprototype}, Lfeatspars {lfs}, "
@@ -338,7 +352,7 @@ class Trainer:
         with torch.no_grad():
             for i, (images, labels) in enumerate(loader):
 
-                # if i >10:
+                # if i >100:
                 #     break
 
                 images = images.to(device, dtype=torch.float32)
