@@ -49,12 +49,12 @@ if __name__=="__main__":
     opts.data_root = r"D:\\ADAXI\\Datasets\\VOC_SDR"
     opts.replay = True
     opts.mix = True
-    opts.task = '10-10'
+    opts.task = '19-1'
     opts.dataset = 'voc'
     opts.step = 1
-    opts.step_ckpt = r"./logs/10-10/10-10-voc_FT/10-10-voc_FT_0.pth"
+    opts.step_ckpt = r"./logs/19-1/19-1-voc_FT/19-1-voc_FT_0.pth"
 
-    root_path = r"C:\ADAXI\Replay_Data"
+    root_path = r"C:\ADAXI\Replay_Data_for_train\19-1"
     file_list = os.listdir(root_path)
     device_ = torch.device('cuda')
     model_old = _build_model()
@@ -63,7 +63,7 @@ if __name__=="__main__":
         print(file_)
         base_path = os.path.join(root_path, file_)
         img_path = os.path.join(base_path, "image")
-        lbl_path = os.path.join(base_path, "label_sdr_10-10")
+        lbl_path = os.path.join(base_path, "label")
         if not os.path.exists(lbl_path):
             os.makedirs(lbl_path)
         img_list = os.listdir(img_path)

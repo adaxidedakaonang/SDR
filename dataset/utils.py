@@ -72,7 +72,7 @@ def mix_labels(img_list, idxs, labels, tmp_path="./tmp", opts=None):
             del net_dict_old
         else:
             model_old.load_state_dict(step_checkpoint['model_state'], strict=True)  # Load also here old parameters
-        print("Previous model loaded from {path}")
+        print(f"Previous model loaded from {path}")
         # logger.info(f"[!] Previous model loaded from {path}")
             # clean memory
         del step_checkpoint['model_state']
@@ -184,7 +184,7 @@ class Subset(torch.utils.data.Dataset):
         self.target_transform = target_transform
 
     def __getitem__(self, idx):
-        # print("subset")
+        # print(f"subset {idx}")
         sample, target = self.dataset[self.indices[idx]]
 
         if self.transform is not None:
@@ -207,15 +207,18 @@ class Replayset(torch.utils.data.Dataset):
         labels_old (list): old label
     """
 
-    def __init__(self, path, labels_old, transform=None):
+    def __init__(self, path, num_per_class, labels_old, transform=None):
         import os
         print("Adding replay images")
         self.base_path = path
+        self.num = num_per_class
+        assert self.num>0, "number of per class should be larger than 0."
         self.labels_old = labels_old
         self.transform = transform
         self.replay_lists = []
         self._get_datalist()
-        print("finish")
+        print(f"Loading path: {self.base_path}.")
+        print(f"Finish loading {len(self.replay_lists)} images, {len(self.replay_lists)//len(self.labels_old[1:])} images per class.")
         
     def _get_datalist(self):
         files = os.listdir(self.base_path)
@@ -225,7 +228,12 @@ class Replayset(torch.utils.data.Dataset):
             with open(full_path, 'r') as f:
                 file_names = [x[:-1].split(' ') for x in f.readlines()]
             tmp = [ (x[0][:], x[1][:]) for x in file_names]
-            self.replay_lists+=(tmp)
+            tmp_len = len(tmp)
+            if not self.num>tmp_len:
+                self.replay_lists+=(tmp[:self.num])
+            else:
+                print(f"class {files[i-1]} not satisfais the number {self.num}, actual number is {tmp_len}")    
+                self.replay_lists+=(tmp)
         print()
 
     def __getitem__(self, index):
@@ -239,7 +247,7 @@ class Replayset(torch.utils.data.Dataset):
         #     img = Image.open(self.replay_lists[i][0]).convert('RGB')
         #     print(self.replay_lists[i][0])
         # print()
-        # print("replay")
+        # print(f"replay {index}")
         img = Image.open(self.replay_lists[index][0]).convert('RGB')
         target = Image.open(self.replay_lists[index][1])
         if self.transform is not None:

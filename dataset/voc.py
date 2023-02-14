@@ -194,9 +194,9 @@ class VOCSegmentationIncremental(data.Dataset):
             self.replayset = None
             if train and len(self.labels_old)>1 and replay:
             #     print("Adding replay images")
-                base_path = r"D:\ADAXI\Datasets\increment\replay_images_and_labels"
-                self.replayset = Replayset(path=base_path, labels_old=self.labels_old, transform=transform)
-                print()
+                # base_path = r"D:\ADAXI\Datasets\increment\replay_images_and_labels"
+                self.replayset = Replayset(path=opt.replay_path, num_per_class=opt.replay_num, labels_old=self.labels_old, transform=transform)
+                # print()
             ### performing mixing label strategy
             if train and len(self.labels_old)>1 and mix_label:
                 print("Performing mixing labels !!!")
@@ -210,12 +210,12 @@ class VOCSegmentationIncremental(data.Dataset):
             self.dataset = Subset(full_voc, idxs, transform, target_transform)
         else:
             self.dataset = full_voc
-        print()
-        if train and replay:
-            self.concate_set = ConcateDataset(self.replayset, self.dataset)
-        else:
-            self.concate_set = ConcateDataset(self.dataset)
-        print()
+        # print()
+        # if train and replay:
+        #     self.concate_set = ConcateDataset(self.replayset, self.dataset)
+        # else:
+        #     self.concate_set = ConcateDataset(self.dataset)
+        # print()
 
     def tmp_funct1(self, x):
         tmp = zeros_like(x)

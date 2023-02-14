@@ -38,22 +38,26 @@ def main(opts):
     train_dst, val_dst, test_dst, n_classes = get_dataset(opts, rank=rank)
     # reset the seed, this revert changes in random seed
     random.seed(opts.random_seed)
-
-    concate_dataset = ConcatDataset([train_dst.dataset, train_dst.replayset])
-    interleave_sampler = InterleaveSampler(concate_dataset, batch_size=opts.batch_size)
-    train_loader = data.DataLoader(concate_dataset, sampler=interleave_sampler, batch_size=opts.batch_size, num_workers=opts.num_workers)
-
-    # train_loader = data.DataLoader(train_dst, batch_size=opts.batch_size,
-    #                                sampler=DistributedSampler(train_dst, num_replicas=world_size, rank=rank),
-    #                                num_workers=opts.num_workers, drop_last=True)
+    if not train_dst.replayset is None:
+        concate_dataset = ConcatDataset([train_dst.dataset, train_dst.replayset])
+        interleave_sampler = InterleaveSampler(concate_dataset, batch_size=opts.batch_size)
+        train_loader = data.DataLoader(concate_dataset, sampler=interleave_sampler, batch_size=opts.batch_size, num_workers=opts.num_workers)
+    else:
+        train_loader = data.DataLoader(train_dst, batch_size=opts.batch_size,
+                                    sampler=DistributedSampler(train_dst, num_replicas=world_size, rank=rank),
+                                    num_workers=opts.num_workers, drop_last=True)
     val_loader = data.DataLoader(val_dst, batch_size=opts.batch_size if opts.crop_val else 1,
                                  sampler=DistributedSampler(val_dst, num_replicas=world_size, rank=rank),
                                  num_workers=opts.num_workers)
     test_loader = data.DataLoader(test_dst, batch_size=opts.batch_size if opts.crop_val else 1,
                                   sampler=DistributedSampler(test_dst, num_replicas=world_size, rank=rank),
                                   num_workers=opts.num_workers)
-    logger.info(f"Dataset: {opts.dataset}, Train set: {len(train_dst)}, Val set: {len(val_dst)},"
-                f" Test set: {len(test_dst)}, n_classes {n_classes}")
+    if not train_dst.replayset is None:
+        logger.info(f"Dataset: {opts.dataset}, Train set: {len(train_dst.dataset)}, Replay set: {len(train_dst.replayset)} Val set: {len(val_dst)},"
+                    f" Test set: {len(test_dst)}, n_classes {n_classes}")
+    else:
+        logger.info(f"Dataset: {opts.dataset}, Train set: {len(train_dst.dataset)}, Val set: {len(val_dst)},"
+                    f" Test set: {len(test_dst)}, n_classes {n_classes}")
     logger.info(f"Total batch size is {opts.batch_size * world_size}")
 
     # xxx Set up model

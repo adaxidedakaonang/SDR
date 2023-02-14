@@ -20,6 +20,7 @@ class InterleaveSampler(Sampler):
         print()
 
     def __iter__(self):
+        # print("sampler")
         samplers_list = []
         sampler_iterators = []
         for dataset_idx in range(self.datasets_num):
@@ -55,7 +56,7 @@ class InterleaveSampler(Sampler):
         return iter(final_sample_list)
 
     def __len__(self):
-        return math.ceil(self.largest_dataset_size/self.batch_size) * self.datasets_num
+        return math.ceil(self.largest_dataset_size/self.batch_size) * self.datasets_num * self.batch_size
 
 
 if __name__ == "__main__":
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     opts = argparser.modify_command_options(opts)
     opts.data_root = r"D:\\ADAXI\\Datasets\\VOC_SDR"
     opts.replay = True
-    opts.mix = True
+    opts.mix = False
     opts.task = '10-10'
     opts.dataset = 'voc'
     opts.step = 1
@@ -72,7 +73,7 @@ if __name__ == "__main__":
     batch_size = 8
     concate_dataset = ConcatDataset([train_dst.dataset, train_dst.replayset])
     interleave_sampler = InterleaveSampler(concate_dataset, batch_size=8)
-    loader = DataLoader(concate_dataset, sampler=interleave_sampler, batch_size=1)
+    loader = DataLoader(concate_dataset, sampler=interleave_sampler, batch_size=8)
     print()
     for _, (image, label) in enumerate(loader):
         # print(image)

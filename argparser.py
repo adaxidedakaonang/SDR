@@ -293,6 +293,13 @@ def get_argparser():
 
     parser.add_argument('--replay', action='store_true', default=False,
                         help='Whether using the replay dataset from flickr')
+
+    parser.add_argument('--replay_path', default=r'D:\ADAXI\Datasets\increment\replay_images_and_labels\10',
+                        help='Replay dataset root path.')
+
+    parser.add_argument('--replay_num', default = 500, type=int,
+                        help='Max number of replay images per class')
+
     parser.add_argument('--mix', action='store_true', default=False,
                         help='Whether using old model to generate old labels on new images.')
 

@@ -279,7 +279,7 @@ class Trainer:
 
             if (cur_step + 1) % print_int == 0:
                 interval_loss = interval_loss / print_int
-                logger.info(f"Epoch {cur_epoch}, Batch {cur_step + 1}/{len(train_loader)*self.batch_size},"
+                logger.info(f"Epoch {cur_epoch}, Batch {cur_step + 1}/{len(train_loader)},"
                             " Loss={:.3f}, Time taken={:.2f}".format(interval_loss,time.time() - start_time))
                 logger.info(f"Loss made of: CE {loss:.2f}, LKD {lkd}, LDE {lde}, LReg {l_reg}, Lfc {lfc}, "
                              f"LSNNL {lSNNL}, Lsepclus {lsep_clusters}, LDEProto {ldeprototype}, Lfeatspars {lfs}, "
