@@ -227,6 +227,8 @@ class Replayset(torch.utils.data.Dataset):
             full_path = os.path.join(self.base_path, files[i-1] + "/train_fullPath.txt")
             with open(full_path, 'r') as f:
                 file_names = [x[:-1].split(' ') for x in f.readlines()]
+            print("Check the label path !!!")
+            print(file_names[0])
             tmp = [ (x[0][:], x[1][:]) for x in file_names]
             tmp_len = len(tmp)
             if not self.num>tmp_len:

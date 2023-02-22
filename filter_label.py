@@ -30,7 +30,8 @@ class FilterManager():
     def sizeReach(self):
         r,c = self.file.shape
         total_size = r*c
-        if self.actual_size / 1.0 / total_size >=self.aim_size:
+        size_percent = self.actual_size / 1.0 / total_size
+        if size_percent >=self.aim_size[0] and size_percent<self.aim_size[1]:
             return True
         else:
             return False
@@ -49,26 +50,29 @@ class FilterManager():
             return None
 
 
-root_path = r"C:\ADAXI\Replay_Data"
-tag = r"\label_sdr_10-10_non_reach_0.2"
+root_path = r"C:\ADAXI\Replay_Data_tfrecord"
+tag = r"/10-10/label"
 # tag = r"\RECALL\labels"
 classes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 range_low = 0
 range_high = 10
-size = 0.1
+size = [0.25, 1]
 class_path = os.listdir(root_path)[range_low:range_high]
+
 classes = classes[range_low:range_high]
+print(class_path)
+print(classes)
 for idx in range(len(class_path)):
     print(class_path[idx])
 # for c_path in class_path:
     src_path = os.path.join(root_path,class_path[idx] + tag)
     bad_path = src_path + "_non_exists"
-    small_path = src_path + "_non_reach"
+    small_path = src_path + "_ranges"
     max_path = src_path + "_non_max"
     aim_class = classes[idx]
     print(f"target class index: {aim_class}")
     
-    small_path = small_path + "_" + str(size)
+    small_path = small_path + "_" + str(size[0]) + "-" + str(size[1])
     create_folder(bad_path)
     create_folder(small_path)
     create_folder(max_path)
@@ -78,10 +82,12 @@ for idx in range(len(class_path)):
         filterManager = FilterManager(file=Image.open(_), aim_class=aim_class, size=size)
         img_name = os.path.split(_)[1]
         if not filterManager.classExists():
-            shutil.move(_, os.path.join(bad_path, img_name) )
+            continue
+            # shutil.copy(_, os.path.join(bad_path, img_name) )
         elif not filterManager.sizeMax():
-            shutil.move(_, os.path.join(max_path, img_name) )
-        elif not filterManager.sizeReach():
-            shutil.move(_, os.path.join(small_path, img_name) )
+            continue
+            # shutil.copy(_, os.path.join(max_path, img_name) )
+        elif filterManager.sizeReach():
+            shutil.copy(_, os.path.join(small_path, img_name) )
 
     print()

@@ -31,7 +31,7 @@ def _build_model():
         del net_dict_old
     else:
         model_old.load_state_dict(step_checkpoint['model_state'], strict=True)  # Load also here old parameters
-    print("Previous model loaded from {path}")
+    print(f"Previous model loaded from {path}")
     # logger.info(f"[!] Previous model loaded from {path}")
         # clean memory
     del step_checkpoint['model_state']
@@ -49,13 +49,13 @@ if __name__=="__main__":
     opts.data_root = r"D:\\ADAXI\\Datasets\\VOC_SDR"
     opts.replay = True
     opts.mix = True
-    opts.task = '19-1'
+    opts.task = '10-10'
     opts.dataset = 'voc'
     opts.step = 1
-    opts.step_ckpt = r"./logs/19-1/19-1-voc_FT/19-1-voc_FT_0.pth"
-
-    root_path = r"C:\ADAXI\Replay_Data_for_train\19-1"
-    file_list = os.listdir(root_path)
+    opts.step_ckpt = r"./logs/10-10/10-10-voc_FT_F_R_M_0.25-1_first15epoch/10-10-voc_FT_F_R_M_0.25-1_first15epoch_1.pth"
+    root_path = r"C:\ADAXI\Replay_Data_for_train\10-10\0.25-1"
+    file_list = os.listdir(root_path)[:]
+    print(file_list)
     device_ = torch.device('cuda')
     model_old = _build_model()
     model_old = model_old.to(device=device_)
@@ -63,7 +63,7 @@ if __name__=="__main__":
         print(file_)
         base_path = os.path.join(root_path, file_)
         img_path = os.path.join(base_path, "image")
-        lbl_path = os.path.join(base_path, "label")
+        lbl_path = os.path.join(base_path, opts.task + "/label_15epoch")
         if not os.path.exists(lbl_path):
             os.makedirs(lbl_path)
         img_list = os.listdir(img_path)
